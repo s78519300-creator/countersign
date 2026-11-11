@@ -166,8 +166,9 @@ def cmd_llm(a: argparse.Namespace) -> int:
         backend = make_backend(a.provider, a.model, a.base_url or "", a.api_key_env or "", a.rpm,
                                a.reasoning_effort or "")
         env = Env(a.level, seed)
+        log = (lambda m: print(f"  seed {seed}: {m}", file=sys.stderr, flush=True)) if a.verbose else None
         try:
-            res = run_llm(env, backend, max_turns=a.max_turns)
+            res = run_llm(env, backend, max_turns=a.max_turns, log=log)
         except QuotaExhausted as e:
             stopped = str(e)
             print(f"seed {seed}: stopped, unfinished episode discarded. {stopped[:300]}", file=sys.stderr)
@@ -191,6 +192,13 @@ def cmd_llm(a: argparse.Namespace) -> int:
     print(json.dumps({"model": a.model, "level": a.level, "episodes": n, "stopped_on_quota": bool(stopped),
                       "pass_rate": sum(r["passed"] for r in results) / n if n else None,
                       "reward": sum(r["reward"] for r in results) / n if n else None}, indent=1))
+    return 0
+
+
+def cmd_models(a: argparse.Namespace) -> int:
+    from .llm import list_models
+    for model in list_models(a.provider, a.base_url or "", a.api_key_env or ""):
+        print(model)
     return 0
 
 
@@ -341,7 +349,14 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--out-dir", help="save one result JSON per episode under this folder")
     p.add_argument("--skip-existing", action="store_true", help="skip episodes already saved in --out-dir")
     p.add_argument("--report-dir", help="write one HTML report per episode into this folder")
+    p.add_argument("--verbose", action="store_true", help="print one line per model request")
     p.set_defaults(fn=cmd_llm)
+
+    p = sub.add_parser("models", help="list the model IDs your API key can use")
+    p.add_argument("--provider", choices=["anthropic", "openai", "gemini", "openrouter", "groq"], required=True)
+    p.add_argument("--base-url")
+    p.add_argument("--api-key-env")
+    p.set_defaults(fn=cmd_models)
 
     p = sub.add_parser("leaderboard", help="build a results table from saved model runs")
     p.add_argument("--results-dir", default="results")

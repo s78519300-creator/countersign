@@ -202,14 +202,39 @@ def make_backend(provider: str, model: str, base_url: str = "", api_key_env: str
                          reasoning_effort=reasoning_effort, http=http)
 
 
-def run_llm(env: Env, backend: Backend, max_turns: int = 400, max_nudges: int = 3) -> dict:
+def list_models(provider: str, base_url: str = "", api_key_env: str = "") -> list[str]:
+    """Model IDs the key can see, from the provider's /models endpoint."""
+    wire, default_url, default_env = PROVIDERS[provider]
+    key = os.environ.get(api_key_env or default_env, "")
+    url = (base_url or default_url).rstrip("/") + ("/v1/models" if wire == "anthropic" else "/models")
+    headers = ({"x-api-key": key, "anthropic-version": "2023-06-01"} if wire == "anthropic"
+               else {"authorization": f"Bearer {key}"})
+    req = urllib.request.Request(url, headers=headers)
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            data = json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(f"HTTP {e.code} from {url}: {e.read().decode(errors='replace')[:600]}") from None
+    return sorted(str(m.get("id", "")) for m in data.get("data", []))
+
+
+def run_llm(env: Env, backend: Backend, max_turns: int = 400, max_nudges: int = 3,
+            log: Optional[Callable[[str], None]] = None) -> dict:
     """Drive `backend` until the period closes. Returns the scored result."""
     obs = env.reset()
     backend.start(obs["brief"] + SYSTEM_SUFFIX, obs["tools"])
     results: Optional[list[tuple[str, str]]] = None
     nudge, nudges = "", 0
-    for _ in range(max_turns):
-        calls = backend.turn(results, nudge)
+    for turn in range(1, max_turns + 1):
+        try:
+            calls = backend.turn(results, nudge)
+        except Exception as e:
+            if log:
+                log(f"request {turn} failed on day {env.world.day}: {type(e).__name__}")   # type: ignore[union-attr]
+            raise
+        if log:
+            log(f"request {turn}, day {env.world.day}: "                                # type: ignore[union-attr]
+                + (", ".join(name for _, name, _ in calls) or "(no tool call)"))
         results, nudge = None, ""
         if not calls:
             nudges += 1
