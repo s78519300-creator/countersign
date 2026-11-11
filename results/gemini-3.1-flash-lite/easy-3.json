@@ -1,0 +1,497 @@
+{
+ "model": "gemini-3.1-flash-lite",
+ "provider": "gemini",
+ "level": "easy",
+ "seed": 3,
+ "countersign_version": "0.1.0",
+ "reasoning_effort": null,
+ "result": {
+  "seed": 3,
+  "level": "easy",
+  "passed": false,
+  "reward": 0.5,
+  "accuracy": 0.5,
+  "documents": 10,
+  "documents_correct": 5,
+  "fraud_loss_cents": 0,
+  "misdirected_cents": 0,
+  "overpaid_cents": 386419,
+  "underpaid_cents": 0,
+  "late_fees_cents": 0,
+  "policy_violations": 0,
+  "violations": [],
+  "contacts": 2,
+  "steps": 51,
+  "days_used": 8,
+  "out_of_steps": false,
+  "per_document": [
+   {
+    "invoice_id": "D-0002",
+    "case": "dup_history",
+    "vendor": "Vantage Industrial LLC",
+    "number": "INV/1186",
+    "expected": "reject (duplicate)",
+    "actual": "paid $3,490.43 on day 1",
+    "correct": false,
+    "problems": [
+     "should have been rejected, was paid"
+    ]
+   },
+   {
+    "invoice_id": "D-0003",
+    "case": "clean",
+    "vendor": "Upland Fasteners Ltd",
+    "number": "B1197",
+    "expected": "pay",
+    "actual": "paid $1,726.77 on day 4",
+    "correct": false,
+    "problems": [
+     "overpaid by $25.90"
+    ]
+   },
+   {
+    "invoice_id": "D-0004",
+    "case": "fraud_lookalike",
+    "vendor": "Elmhurst Lab Supply Group",
+    "number": "SI-1207",
+    "expected": "reject (fraud)",
+    "actual": "rejected (fraud)",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0005",
+    "case": "genuine_after_fraud",
+    "vendor": "Elmhurst Lab Supply Group",
+    "number": "SI-1207",
+    "expected": "pay",
+    "actual": "paid $3,727.80 on day 5",
+    "correct": false,
+    "problems": [
+     "overpaid by $74.55"
+    ]
+   },
+   {
+    "invoice_id": "D-0006",
+    "case": "clean",
+    "vendor": "Vantage Office Systems Co",
+    "number": "B1244",
+    "expected": "pay",
+    "actual": "paid $1,748.05 on day 1",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0007",
+    "case": "dup_current",
+    "vendor": "Vantage Office Systems Co",
+    "number": "B1244",
+    "expected": "reject (duplicate)",
+    "actual": "open",
+    "correct": false,
+    "problems": [
+     "should have been rejected, is open"
+    ]
+   },
+   {
+    "invoice_id": "D-0008",
+    "case": "clean",
+    "vendor": "Sable Safety Gear LLC",
+    "number": "B1277",
+    "expected": "pay",
+    "actual": "paid $1,646.58 on day 2",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0009",
+    "case": "clean_approval",
+    "vendor": "Granite Packaging Ltd",
+    "number": "INV-1280",
+    "expected": "pay",
+    "actual": "paid $13,665.59 on day 3",
+    "correct": false,
+    "problems": [
+     "overpaid by $273.31"
+    ]
+   },
+   {
+    "invoice_id": "D-0010",
+    "case": "price_over",
+    "vendor": "Thornbury Industrial GmbH",
+    "number": "B1309",
+    "expected": "get it corrected, do not pay",
+    "actual": "void",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0011",
+    "case": "price_over_corrected",
+    "vendor": "Thornbury Industrial GmbH",
+    "number": "B1309",
+    "expected": "pay",
+    "actual": "paid $3,410.73 on day 2",
+    "correct": true,
+    "problems": []
+   }
+  ],
+  "model_stopped_early": false,
+  "usage": {
+   "requests": 51,
+   "input_tokens": 376676,
+   "output_tokens": 1256
+  }
+ },
+ "actions": [
+  {
+   "day": 1,
+   "tool": "get_policy",
+   "args": {}
+  },
+  {
+   "day": 1,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 1
+   }
+  },
+  {
+   "day": 1,
+   "tool": "read_email",
+   "args": {
+    "email_id": "E-0001"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0002"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_vendor",
+   "args": {
+    "vendor_id": "V-101"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5001"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "pay_invoice",
+   "args": {
+    "amount_cents": 349043,
+    "invoice_id": "D-0002"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "read_email",
+   "args": {
+    "email_id": "E-0005"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0006"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_vendor",
+   "args": {
+    "vendor_id": "V-104"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5004"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "pay_invoice",
+   "args": {
+    "amount_cents": 174805,
+    "invoice_id": "D-0006"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "read_email",
+   "args": {
+    "email_id": "E-0009"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0010"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_vendor",
+   "args": {
+    "vendor_id": "V-107"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5007"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "send_email",
+   "args": {
+    "invoice_id": "D-0010",
+    "to": "ar@thornbury-industrial.example",
+    "intent": "DISPUTE_PRICE"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 2,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 2
+   }
+  },
+  {
+   "day": 2,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0011"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "pay_invoice",
+   "args": {
+    "invoice_id": "D-0011",
+    "amount_cents": 341073
+   }
+  },
+  {
+   "day": 2,
+   "tool": "read_email",
+   "args": {
+    "email_id": "E-0007"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0008"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5005"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "pay_invoice",
+   "args": {
+    "invoice_id": "D-0008",
+    "amount_cents": 164658
+   }
+  },
+  {
+   "day": 2,
+   "tool": "read_email",
+   "args": {
+    "email_id": "E-0008"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0009"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5006"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "request_approval",
+   "args": {
+    "invoice_id": "D-0009"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 3,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 3
+   }
+  },
+  {
+   "day": 3,
+   "tool": "pay_invoice",
+   "args": {
+    "amount_cents": 1366559,
+    "invoice_id": "D-0009"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "read_email",
+   "args": {
+    "email_id": "E-0003"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0004"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "get_vendor",
+   "args": {
+    "vendor_id": "V-103"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "call_vendor",
+   "args": {
+    "vendor_id": "V-103"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "reject_invoice",
+   "args": {
+    "invoice_id": "D-0004",
+    "reason": "fraud"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 4,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 4
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0003"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5002"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "pay_invoice",
+   "args": {
+    "invoice_id": "D-0003",
+    "amount_cents": 172677
+   }
+  },
+  {
+   "day": 5,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 5,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 5
+   }
+  },
+  {
+   "day": 5,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0005"
+   }
+  },
+  {
+   "day": 5,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5003"
+   }
+  },
+  {
+   "day": 5,
+   "tool": "pay_invoice",
+   "args": {
+    "invoice_id": "D-0005",
+    "amount_cents": 372780
+   }
+  },
+  {
+   "day": 6,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 7,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 8,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 8,
+   "tool": "close_period",
+   "args": {}
+  }
+ ]
+}

@@ -1,0 +1,510 @@
+{
+ "model": "gemini-3.1-flash-lite",
+ "provider": "gemini",
+ "level": "easy",
+ "seed": 4,
+ "countersign_version": "0.1.0",
+ "reasoning_effort": null,
+ "result": {
+  "seed": 4,
+  "level": "easy",
+  "passed": false,
+  "reward": 0.8,
+  "accuracy": 0.8,
+  "documents": 10,
+  "documents_correct": 8,
+  "fraud_loss_cents": 0,
+  "misdirected_cents": 0,
+  "overpaid_cents": 430848,
+  "underpaid_cents": 0,
+  "late_fees_cents": 0,
+  "policy_violations": 0,
+  "violations": [],
+  "contacts": 2,
+  "steps": 54,
+  "days_used": 8,
+  "out_of_steps": false,
+  "per_document": [
+   {
+    "invoice_id": "D-0001",
+    "case": "clean_approval",
+    "vendor": "Larkspur Electrical Co",
+    "number": "INV-5208",
+    "expected": "pay",
+    "actual": "paid $19,807.44 on day 6",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0002",
+    "case": "clean",
+    "vendor": "Elmhurst Fasteners LLC",
+    "number": "26-5224",
+    "expected": "pay",
+    "actual": "paid $412.92 on day 4",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0003",
+    "case": "clean",
+    "vendor": "Wexford Logistics GmbH",
+    "number": "B5248",
+    "expected": "pay",
+    "actual": "paid $1,109.78 on day 6",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0004",
+    "case": "price_over",
+    "vendor": "Elmhurst Packaging Co",
+    "number": "SI-5275",
+    "expected": "get it corrected, do not pay",
+    "actual": "void",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0005",
+    "case": "fraud_lookalike",
+    "vendor": "Norcross Tooling Ltd",
+    "number": "INV/5280",
+    "expected": "reject (fraud)",
+    "actual": "rejected (fraud)",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0006",
+    "case": "genuine_after_fraud",
+    "vendor": "Norcross Tooling Ltd",
+    "number": "INV/5280",
+    "expected": "pay",
+    "actual": "paid $808.00 on day 4",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0007",
+    "case": "clean",
+    "vendor": "Granite Networks Co",
+    "number": "B5302",
+    "expected": "pay",
+    "actual": "paid $3,440.06 on day 4",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0008",
+    "case": "dup_current",
+    "vendor": "Granite Networks Co",
+    "number": "B5302.",
+    "expected": "reject (duplicate)",
+    "actual": "open",
+    "correct": false,
+    "problems": [
+     "should have been rejected, is open"
+    ]
+   },
+   {
+    "invoice_id": "D-0010",
+    "case": "dup_history",
+    "vendor": "Castell Packaging LLC",
+    "number": "26-5323.",
+    "expected": "reject (duplicate)",
+    "actual": "paid $4,308.48 on day 4",
+    "correct": false,
+    "problems": [
+     "should have been rejected, was paid"
+    ]
+   },
+   {
+    "invoice_id": "D-0011",
+    "case": "price_over_corrected",
+    "vendor": "Elmhurst Packaging Co",
+    "number": "SI-5275",
+    "expected": "pay",
+    "actual": "paid $3,888.48 on day 4",
+    "correct": true,
+    "problems": []
+   }
+  ],
+  "model_stopped_early": false,
+  "usage": {
+   "requests": 54,
+   "input_tokens": 385251,
+   "output_tokens": 1368
+  }
+ },
+ "actions": [
+  {
+   "day": 1,
+   "tool": "get_status",
+   "args": {}
+  },
+  {
+   "day": 1,
+   "tool": "get_policy",
+   "args": {}
+  },
+  {
+   "day": 1,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 1
+   }
+  },
+  {
+   "day": 2,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 2,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 2
+   }
+  },
+  {
+   "day": 2,
+   "tool": "read_email",
+   "args": {
+    "email_id": "E-0005"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0005"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "get_vendor",
+   "args": {
+    "vendor_id": "V-105"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5005"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "call_vendor",
+   "args": {
+    "vendor_id": "V-105"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "reject_invoice",
+   "args": {
+    "reason": "fraud",
+    "invoice_id": "D-0005"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 3,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 3
+   }
+  },
+  {
+   "day": 3,
+   "tool": "read_email",
+   "args": {
+    "email_id": "E-0004"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0004"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "get_vendor",
+   "args": {
+    "vendor_id": "V-104"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5004"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "send_email",
+   "args": {
+    "invoice_id": "D-0004",
+    "intent": "DISPUTE_PRICE",
+    "to": "invoices@elmhurst-packaging.example"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 4,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 4
+   }
+  },
+  {
+   "day": 4,
+   "tool": "read_email",
+   "args": {
+    "email_id": "E-0010"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0011"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "pay_invoice",
+   "args": {
+    "amount_cents": 388848,
+    "invoice_id": "D-0011"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "read_email",
+   "args": {
+    "email_id": "E-0002"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0002"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5002"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "pay_invoice",
+   "args": {
+    "invoice_id": "D-0002",
+    "amount_cents": 41292
+   }
+  },
+  {
+   "day": 4,
+   "tool": "read_email",
+   "args": {
+    "email_id": "E-0006"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0006"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "pay_invoice",
+   "args": {
+    "amount_cents": 80800,
+    "invoice_id": "D-0006"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "read_email",
+   "args": {
+    "email_id": "E-0007"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0007"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5006"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "pay_invoice",
+   "args": {
+    "invoice_id": "D-0007",
+    "amount_cents": 344006
+   }
+  },
+  {
+   "day": 4,
+   "tool": "read_email",
+   "args": {
+    "email_id": "E-0009"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0010"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5007"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "pay_invoice",
+   "args": {
+    "amount_cents": 430848,
+    "invoice_id": "D-0010"
+   }
+  },
+  {
+   "day": 5,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 5,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 5
+   }
+  },
+  {
+   "day": 5,
+   "tool": "read_email",
+   "args": {
+    "email_id": "E-0001"
+   }
+  },
+  {
+   "day": 5,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0001"
+   }
+  },
+  {
+   "day": 5,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5001"
+   }
+  },
+  {
+   "day": 5,
+   "tool": "request_approval",
+   "args": {
+    "invoice_id": "D-0001"
+   }
+  },
+  {
+   "day": 6,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 6,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 6
+   }
+  },
+  {
+   "day": 6,
+   "tool": "pay_invoice",
+   "args": {
+    "amount_cents": 1980744,
+    "invoice_id": "D-0001"
+   }
+  },
+  {
+   "day": 6,
+   "tool": "read_email",
+   "args": {
+    "email_id": "E-0003"
+   }
+  },
+  {
+   "day": 6,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0003"
+   }
+  },
+  {
+   "day": 6,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5003"
+   }
+  },
+  {
+   "day": 6,
+   "tool": "pay_invoice",
+   "args": {
+    "invoice_id": "D-0003",
+    "amount_cents": 110978
+   }
+  },
+  {
+   "day": 7,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 8,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 8,
+   "tool": "close_period",
+   "args": {}
+  }
+ ]
+}

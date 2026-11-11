@@ -1,0 +1,473 @@
+{
+ "model": "gemini-3.1-flash-lite",
+ "provider": "gemini",
+ "level": "easy",
+ "seed": 1,
+ "countersign_version": "0.1.0",
+ "reasoning_effort": null,
+ "result": {
+  "seed": 1,
+  "level": "easy",
+  "passed": false,
+  "reward": 0.7,
+  "accuracy": 0.7,
+  "documents": 10,
+  "documents_correct": 7,
+  "fraud_loss_cents": 0,
+  "misdirected_cents": 0,
+  "overpaid_cents": 254686,
+  "underpaid_cents": 0,
+  "late_fees_cents": 0,
+  "policy_violations": 0,
+  "violations": [],
+  "contacts": 1,
+  "steps": 48,
+  "days_used": 8,
+  "out_of_steps": false,
+  "per_document": [
+   {
+    "invoice_id": "D-0001",
+    "case": "clean",
+    "vendor": "Meridian Industrial Co",
+    "number": "INV-1379",
+    "expected": "pay",
+    "actual": "paid $3,654.43 on day 6",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0002",
+    "case": "price_over",
+    "vendor": "Garnet Industrial Ltd",
+    "number": "INV/1407",
+    "expected": "get it corrected, do not pay",
+    "actual": "void",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0004",
+    "case": "dup_history",
+    "vendor": "Dunmore Safety Gear Group",
+    "number": "INV-1431.",
+    "expected": "reject (duplicate)",
+    "actual": "paid $2,437.51 on day 2",
+    "correct": false,
+    "problems": [
+     "should have been rejected, was paid"
+    ]
+   },
+   {
+    "invoice_id": "D-0005",
+    "case": "clean",
+    "vendor": "Cobalt Logistics LLC",
+    "number": "B1434",
+    "expected": "pay",
+    "actual": "paid $2,616.20 on day 4",
+    "correct": false,
+    "problems": [
+     "overpaid by $52.32"
+    ]
+   },
+   {
+    "invoice_id": "D-0006",
+    "case": "clean_approval",
+    "vendor": "Redfern Logistics Ltd",
+    "number": "SI-1438",
+    "expected": "pay",
+    "actual": "paid $9,936.12 on day 5",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0007",
+    "case": "fraud_lookalike",
+    "vendor": "Garnet Electrical Ltd",
+    "number": "B1446",
+    "expected": "reject (fraud)",
+    "actual": "rejected (fraud)",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0008",
+    "case": "genuine_after_fraud",
+    "vendor": "Garnet Electrical Ltd",
+    "number": "B1446",
+    "expected": "pay",
+    "actual": "paid $3,246.13 on day 5",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0009",
+    "case": "clean",
+    "vendor": "Upland Office Systems LLC",
+    "number": "B1460",
+    "expected": "pay",
+    "actual": "paid $3,767.05 on day 1",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0010",
+    "case": "dup_current",
+    "vendor": "Upland Office Systems LLC",
+    "number": "B1460",
+    "expected": "reject (duplicate)",
+    "actual": "rejected (duplicate)",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0011",
+    "case": "price_over_corrected",
+    "vendor": "Garnet Industrial Ltd",
+    "number": "INV/1407",
+    "expected": "pay",
+    "actual": "paid $2,851.95 on day 4",
+    "correct": false,
+    "problems": [
+     "overpaid by $57.03"
+    ]
+   }
+  ],
+  "model_stopped_early": false,
+  "usage": {
+   "requests": 48,
+   "input_tokens": 325852,
+   "output_tokens": 1151
+  }
+ },
+ "actions": [
+  {
+   "day": 1,
+   "tool": "get_policy",
+   "args": {}
+  },
+  {
+   "day": 1,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 1
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0009"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_vendor",
+   "args": {
+    "vendor_id": "V-107"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5007"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "pay_invoice",
+   "args": {
+    "invoice_id": "D-0009",
+    "amount_cents": 376705
+   }
+  },
+  {
+   "day": 2,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 2,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 2
+   }
+  },
+  {
+   "day": 2,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0004"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "get_vendor",
+   "args": {
+    "vendor_id": "V-103"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5003"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "pay_invoice",
+   "args": {
+    "amount_cents": 243751,
+    "invoice_id": "D-0004"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0010"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "list_invoices",
+   "args": {
+    "vendor_id": "V-107"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "reject_invoice",
+   "args": {
+    "reason": "duplicate",
+    "invoice_id": "D-0010"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 3,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 3
+   }
+  },
+  {
+   "day": 3,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0002"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "get_vendor",
+   "args": {
+    "vendor_id": "V-102"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5002"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0007"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "get_vendor",
+   "args": {
+    "vendor_id": "V-106"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "reject_invoice",
+   "args": {
+    "invoice_id": "D-0007",
+    "reason": "fraud"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5002"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "send_email",
+   "args": {
+    "to": "ar@garnet-industrial.example",
+    "intent": "DISPUTE_PRICE",
+    "invoice_id": "D-0002"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 4,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 4
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0011"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "pay_invoice",
+   "args": {
+    "amount_cents": 285195,
+    "invoice_id": "D-0011"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0005"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5004"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "pay_invoice",
+   "args": {
+    "amount_cents": 261620,
+    "invoice_id": "D-0005"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0006"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "request_approval",
+   "args": {
+    "invoice_id": "D-0006"
+   }
+  },
+  {
+   "day": 5,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 5,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 5
+   }
+  },
+  {
+   "day": 5,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0008"
+   }
+  },
+  {
+   "day": 5,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5006"
+   }
+  },
+  {
+   "day": 5,
+   "tool": "pay_invoice",
+   "args": {
+    "invoice_id": "D-0008",
+    "amount_cents": 324613
+   }
+  },
+  {
+   "day": 5,
+   "tool": "pay_invoice",
+   "args": {
+    "amount_cents": 993612,
+    "invoice_id": "D-0006"
+   }
+  },
+  {
+   "day": 6,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 6,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 6
+   }
+  },
+  {
+   "day": 6,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0001"
+   }
+  },
+  {
+   "day": 6,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5001"
+   }
+  },
+  {
+   "day": 6,
+   "tool": "pay_invoice",
+   "args": {
+    "invoice_id": "D-0001",
+    "amount_cents": 365443
+   }
+  },
+  {
+   "day": 7,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 8,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 8,
+   "tool": "close_period",
+   "args": {}
+  }
+ ]
+}

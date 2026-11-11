@@ -1,0 +1,482 @@
+{
+ "model": "gemini-3.1-flash-lite",
+ "provider": "gemini",
+ "level": "easy",
+ "seed": 2,
+ "countersign_version": "0.1.0",
+ "reasoning_effort": null,
+ "result": {
+  "seed": 2,
+  "level": "easy",
+  "passed": false,
+  "reward": 0.6667,
+  "accuracy": 0.6667,
+  "documents": 9,
+  "documents_correct": 6,
+  "fraud_loss_cents": 0,
+  "misdirected_cents": 0,
+  "overpaid_cents": 317705,
+  "underpaid_cents": 0,
+  "late_fees_cents": 0,
+  "policy_violations": 0,
+  "violations": [],
+  "contacts": 1,
+  "steps": 51,
+  "days_used": 8,
+  "out_of_steps": false,
+  "per_document": [
+   {
+    "invoice_id": "D-0001",
+    "case": "clean",
+    "vendor": "Oakhaven Supply Co",
+    "number": "INV/5991",
+    "expected": "pay",
+    "actual": "paid $961.58 on day 4",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0002",
+    "case": "price_over",
+    "vendor": "Castell Facilities Ltd",
+    "number": "INV/6019",
+    "expected": "get it corrected, do not pay",
+    "actual": "paid $1,993.61 on day 2",
+    "correct": false,
+    "problems": [
+     "paid an invoice that needed correcting"
+    ]
+   },
+   {
+    "invoice_id": "D-0003",
+    "case": "clean",
+    "vendor": "Dunmore Safety Gear LLC",
+    "number": "INV/6033",
+    "expected": "pay",
+    "actual": "paid $598.90 on day 2",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0004",
+    "case": "fraud_lookalike",
+    "vendor": "Sable Industrial Inc",
+    "number": "B6069",
+    "expected": "reject (fraud)",
+    "actual": "rejected (fraud)",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0005",
+    "case": "genuine_after_fraud",
+    "vendor": "Sable Industrial Inc",
+    "number": "B6069",
+    "expected": "pay",
+    "actual": "paid $2,704.78 on day 3",
+    "correct": false,
+    "problems": [
+     "overpaid by $27.04"
+    ]
+   },
+   {
+    "invoice_id": "D-0006",
+    "case": "clean_approval",
+    "vendor": "Juniper Components Group",
+    "number": "SI-6080",
+    "expected": "pay",
+    "actual": "paid $12,237.04 on day 3",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0007",
+    "case": "clean",
+    "vendor": "Castell Supply GmbH",
+    "number": "26-6115",
+    "expected": "pay",
+    "actual": "paid $431.63 on day 4",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0008",
+    "case": "dup_current",
+    "vendor": "Castell Supply GmbH",
+    "number": "26/6115",
+    "expected": "reject (duplicate)",
+    "actual": "rejected (duplicate)",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0009",
+    "case": "math",
+    "vendor": "Larkspur Office Systems GmbH",
+    "number": "B6123",
+    "expected": "get it corrected, do not pay",
+    "actual": "paid $1,156.40 on day 1",
+    "correct": false,
+    "problems": [
+     "paid an invoice that needed correcting"
+    ]
+   }
+  ],
+  "model_stopped_early": false,
+  "usage": {
+   "requests": 51,
+   "input_tokens": 386900,
+   "output_tokens": 1227
+  }
+ },
+ "actions": [
+  {
+   "day": 1,
+   "tool": "get_policy",
+   "args": {}
+  },
+  {
+   "day": 1,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 1
+   }
+  },
+  {
+   "day": 1,
+   "tool": "read_email",
+   "args": {
+    "email_id": "E-0004"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0004"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_vendor",
+   "args": {
+    "vendor_id": "V-104"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "read_email",
+   "args": {
+    "email_id": "E-0009"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0009"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_vendor",
+   "args": {
+    "vendor_id": "V-107"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5004"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5007"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "call_vendor",
+   "args": {
+    "vendor_id": "V-104"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "reject_invoice",
+   "args": {
+    "invoice_id": "D-0004",
+    "reason": "fraud"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "pay_invoice",
+   "args": {
+    "amount_cents": 115640,
+    "invoice_id": "D-0009"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 2,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 2
+   }
+  },
+  {
+   "day": 2,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0002"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "get_vendor",
+   "args": {
+    "vendor_id": "V-102"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5002"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0003"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "get_vendor",
+   "args": {
+    "vendor_id": "V-103"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5003"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0006"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "get_vendor",
+   "args": {
+    "vendor_id": "V-105"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5005"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "pay_invoice",
+   "args": {
+    "invoice_id": "D-0002",
+    "amount_cents": 199361
+   }
+  },
+  {
+   "day": 2,
+   "tool": "pay_invoice",
+   "args": {
+    "amount_cents": 59890,
+    "invoice_id": "D-0003"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "request_approval",
+   "args": {
+    "invoice_id": "D-0006"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 3,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 3
+   }
+  },
+  {
+   "day": 3,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0005"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "pay_invoice",
+   "args": {
+    "amount_cents": 270478,
+    "invoice_id": "D-0005"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "pay_invoice",
+   "args": {
+    "invoice_id": "D-0006",
+    "amount_cents": 1223704
+   }
+  },
+  {
+   "day": 4,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 4,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 4
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0001"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_vendor",
+   "args": {
+    "vendor_id": "V-101"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5001"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0007"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_vendor",
+   "args": {
+    "vendor_id": "V-106"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5006"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "pay_invoice",
+   "args": {
+    "invoice_id": "D-0001",
+    "amount_cents": 96158
+   }
+  },
+  {
+   "day": 4,
+   "tool": "pay_invoice",
+   "args": {
+    "invoice_id": "D-0007",
+    "amount_cents": 43163
+   }
+  },
+  {
+   "day": 5,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 6,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 6,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 6
+   }
+  },
+  {
+   "day": 6,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0008"
+   }
+  },
+  {
+   "day": 6,
+   "tool": "list_invoices",
+   "args": {
+    "vendor_id": "V-106"
+   }
+  },
+  {
+   "day": 6,
+   "tool": "reject_invoice",
+   "args": {
+    "reason": "duplicate",
+    "invoice_id": "D-0008"
+   }
+  },
+  {
+   "day": 7,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 8,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 8,
+   "tool": "close_period",
+   "args": {}
+  }
+ ]
+}
