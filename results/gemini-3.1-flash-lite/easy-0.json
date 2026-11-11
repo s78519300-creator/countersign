@@ -1,0 +1,438 @@
+{
+ "model": "gemini-3.1-flash-lite",
+ "provider": "gemini",
+ "level": "easy",
+ "seed": 0,
+ "countersign_version": "0.1.0",
+ "reasoning_effort": null,
+ "result": {
+  "seed": 0,
+  "level": "easy",
+  "passed": false,
+  "reward": 0.6667,
+  "accuracy": 0.6667,
+  "documents": 9,
+  "documents_correct": 6,
+  "fraud_loss_cents": 0,
+  "misdirected_cents": 0,
+  "overpaid_cents": 446215,
+  "underpaid_cents": 0,
+  "late_fees_cents": 0,
+  "policy_violations": 0,
+  "violations": [],
+  "contacts": 0,
+  "steps": 45,
+  "days_used": 8,
+  "out_of_steps": false,
+  "per_document": [
+   {
+    "invoice_id": "D-0001",
+    "case": "price_over",
+    "vendor": "Norcross Packaging Group",
+    "number": "INV-4919",
+    "expected": "get it corrected, do not pay",
+    "actual": "rejected (price_mismatch)",
+    "correct": false,
+    "problems": [
+     "no corrected invoice was obtained from the vendor"
+    ]
+   },
+   {
+    "invoice_id": "D-0002",
+    "case": "clean_approval",
+    "vendor": "Upland Safety Gear Inc",
+    "number": "SI-4936",
+    "expected": "pay",
+    "actual": "paid $24,558.54 on day 5",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0003",
+    "case": "fraud_lookalike",
+    "vendor": "Stanmore Logistics Group",
+    "number": "INV/4953",
+    "expected": "reject (fraud)",
+    "actual": "rejected (fraud)",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0004",
+    "case": "genuine_after_fraud",
+    "vendor": "Stanmore Logistics Group",
+    "number": "INV/4953",
+    "expected": "pay",
+    "actual": "paid $1,153.32 on day 4",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0005",
+    "case": "clean",
+    "vendor": "Halcyon Safety Gear Ltd",
+    "number": "SI-4966",
+    "expected": "pay",
+    "actual": "paid $2,430.40 on day 1",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0006",
+    "case": "math",
+    "vendor": "Whitlock Networks LLC",
+    "number": "INV/4974",
+    "expected": "get it corrected, do not pay",
+    "actual": "paid $4,441.84 on day 1",
+    "correct": false,
+    "problems": [
+     "paid an invoice that needed correcting"
+    ]
+   },
+   {
+    "invoice_id": "D-0007",
+    "case": "clean",
+    "vendor": "Fenwick Chemicals GmbH",
+    "number": "INV-4985",
+    "expected": "pay",
+    "actual": "paid $1,354.41 on day 3",
+    "correct": false,
+    "problems": [
+     "overpaid by $20.31"
+    ]
+   },
+   {
+    "invoice_id": "D-0008",
+    "case": "dup_current",
+    "vendor": "Fenwick Chemicals GmbH",
+    "number": "INV-4985",
+    "expected": "reject (duplicate)",
+    "actual": "rejected (duplicate)",
+    "correct": true,
+    "problems": []
+   },
+   {
+    "invoice_id": "D-0009",
+    "case": "clean",
+    "vendor": "Vantage Fasteners Ltd",
+    "number": "INV/4990",
+    "expected": "pay",
+    "actual": "paid $5,424.20 on day 1",
+    "correct": true,
+    "problems": []
+   }
+  ],
+  "model_stopped_early": false,
+  "usage": {
+   "requests": 32,
+   "input_tokens": 212331,
+   "output_tokens": 1026
+  }
+ },
+ "actions": [
+  {
+   "day": 1,
+   "tool": "get_status",
+   "args": {}
+  },
+  {
+   "day": 1,
+   "tool": "get_policy",
+   "args": {}
+  },
+  {
+   "day": 1,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 1
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0005"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0006"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0009"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_vendor",
+   "args": {
+    "vendor_id": "V-104"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_vendor",
+   "args": {
+    "vendor_id": "V-105"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_vendor",
+   "args": {
+    "vendor_id": "V-107"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5004"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5005"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5007"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "pay_invoice",
+   "args": {
+    "amount_cents": 243040,
+    "invoice_id": "D-0005"
+   }
+  },
+  {
+   "day": 1,
+   "tool": "pay_invoice",
+   "args": {
+    "invoice_id": "D-0006",
+    "amount_cents": 444184
+   }
+  },
+  {
+   "day": 1,
+   "tool": "pay_invoice",
+   "args": {
+    "amount_cents": 542420,
+    "invoice_id": "D-0009"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 2,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 2
+   }
+  },
+  {
+   "day": 2,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0003"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "get_vendor",
+   "args": {
+    "vendor_id": "V-103"
+   }
+  },
+  {
+   "day": 2,
+   "tool": "reject_invoice",
+   "args": {
+    "invoice_id": "D-0003",
+    "reason": "fraud"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 3,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 3
+   }
+  },
+  {
+   "day": 3,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0001"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0007"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5001"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5006"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "reject_invoice",
+   "args": {
+    "invoice_id": "D-0001",
+    "reason": "price_mismatch"
+   }
+  },
+  {
+   "day": 3,
+   "tool": "pay_invoice",
+   "args": {
+    "invoice_id": "D-0007",
+    "amount_cents": 135441
+   }
+  },
+  {
+   "day": 4,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 4,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 4
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0002"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0004"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5002"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "get_po",
+   "args": {
+    "po_id": "PO-5003"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "request_approval",
+   "args": {
+    "invoice_id": "D-0002"
+   }
+  },
+  {
+   "day": 4,
+   "tool": "pay_invoice",
+   "args": {
+    "invoice_id": "D-0004",
+    "amount_cents": 115332
+   }
+  },
+  {
+   "day": 5,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 5,
+   "tool": "list_inbox",
+   "args": {
+    "since_day": 5
+   }
+  },
+  {
+   "day": 5,
+   "tool": "get_invoice",
+   "args": {
+    "invoice_id": "D-0008"
+   }
+  },
+  {
+   "day": 5,
+   "tool": "reject_invoice",
+   "args": {
+    "reason": "duplicate",
+    "invoice_id": "D-0008"
+   }
+  },
+  {
+   "day": 5,
+   "tool": "pay_invoice",
+   "args": {
+    "invoice_id": "D-0002",
+    "amount_cents": 2455854
+   }
+  },
+  {
+   "day": 6,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 7,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 8,
+   "tool": "end_day",
+   "args": {}
+  },
+  {
+   "day": 8,
+   "tool": "close_period",
+   "args": {}
+  }
+ ]
+}
