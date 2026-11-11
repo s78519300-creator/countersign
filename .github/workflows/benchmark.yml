@@ -1,0 +1,87 @@
+name: Benchmark a model
+# Runs a language model through Countersign and commits the results to results/ and RESULTS.md.
+# Add the provider's API key as a repository secret first (Settings > Secrets and variables > Actions):
+#   GEMINI_API_KEY, OPENROUTER_API_KEY, GROQ_API_KEY, OPENAI_API_KEY or ANTHROPIC_API_KEY
+# Runs are resumable: episodes already saved are skipped, and a run that hits the provider's daily
+# quota keeps what it finished. Run it again the next day to continue.
+on:
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: API provider
+        type: choice
+        options: [gemini, openrouter, groq, openai, anthropic]
+        default: gemini
+      model:
+        description: Model ID exactly as the provider names it
+        required: true
+        default: gemini-3.1-flash-lite
+      level:
+        type: choice
+        options: [easy, medium, hard]
+        default: easy
+      seeds:
+        description: Seeds to run, for example 0-2
+        default: "0-2"
+      rpm:
+        description: Maximum requests per minute (keep under your quota)
+        default: "8"
+      reasoning_effort:
+        description: Optional reasoning effort (low, medium, high) for APIs that accept it
+        default: ""
+permissions:
+  contents: write
+concurrency:
+  group: benchmark
+  cancel-in-progress: false
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      PROVIDER: ${{ inputs.provider }}
+      MODEL: ${{ inputs.model }}
+      LEVEL: ${{ inputs.level }}
+      SEEDS: ${{ inputs.seeds }}
+      RPM: ${{ inputs.rpm }}
+      EFFORT: ${{ inputs.reasoning_effort }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -e .
+      - name: Run the model
+        run: |
+          args=(--provider "$PROVIDER" --model "$MODEL" --level "$LEVEL" --seeds "$SEEDS" --rpm "$RPM"
+                --out-dir results --skip-existing --report-dir reports)
+          if [ -n "$EFFORT" ]; then args+=(--reasoning-effort "$EFFORT"); fi
+          countersign llm "${args[@]}" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Rebuild the results table
+        if: always()
+        run: |
+          mkdir -p results
+          countersign leaderboard --results-dir results --out RESULTS.md
+          cat RESULTS.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Keep the episode reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: episode-reports
+          path: reports/
+          if-no-files-found: ignore
+      - name: Commit the results
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add results RESULTS.md
+          git diff --cached --quiet && exit 0
+          git commit -m "Benchmark results: $MODEL on $LEVEL"
+          git pull --rebase
+          git push
