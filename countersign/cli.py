@@ -146,27 +146,121 @@ def cmd_mcp(a: argparse.Namespace) -> int:
     return 0
 
 
+def _slug(model: str) -> str:
+    return "".join(ch if ch.isalnum() or ch in "-._" else "-" for ch in model).strip("-") or "model"
+
+
 def cmd_llm(a: argparse.Namespace) -> int:
-    from .llm import AnthropicBackend, OpenAIBackend, run_llm
-    results = []
+    import os
+    from .llm import QuotaExhausted, make_backend, run_llm
+    out_dir = os.path.join(a.out_dir, _slug(a.model)) if a.out_dir else ""
+    for d in (out_dir, a.report_dir):
+        if d:
+            os.makedirs(d, exist_ok=True)
+    results, stopped = [], ""
     for seed in _seeds(a.seeds):
-        if a.provider == "anthropic":
-            backend = AnthropicBackend(a.model, base_url=a.base_url or "https://api.anthropic.com")
-        else:
-            backend = OpenAIBackend(a.model, base_url=a.base_url or "https://api.openai.com/v1")
+        path = os.path.join(out_dir, f"{a.level}-{seed}.json") if out_dir else ""
+        if path and a.skip_existing and os.path.exists(path):
+            print(f"seed {seed}: already done, skipping", file=sys.stderr)
+            continue
+        backend = make_backend(a.provider, a.model, a.base_url or "", a.api_key_env or "", a.rpm,
+                               a.reasoning_effort or "")
         env = Env(a.level, seed)
-        res = run_llm(env, backend, max_turns=a.max_turns)
+        try:
+            res = run_llm(env, backend, max_turns=a.max_turns)
+        except QuotaExhausted as e:
+            stopped = str(e)
+            print(f"seed {seed}: stopped, unfinished episode discarded. {stopped[:300]}", file=sys.stderr)
+            break
         results.append(res)
         print(f"seed {seed}: {_summary(res)}", file=sys.stderr)
+        if path:
+            actions = [{"day": s["day"], "tool": s["tool"],
+                        "args": {k: v for k, v in s["args"].items() if k not in ("body", "note", "question")},
+                        **({"error": s["result"]["error"]} if "error" in s["result"] else {})}
+                       for s in env.trajectory()]
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump({"model": a.model, "provider": a.provider, "level": a.level, "seed": seed,
+                           "countersign_version": __version__, "reasoning_effort": a.reasoning_effort or None,
+                           "result": res, "actions": actions}, f, indent=1)
         if a.report_dir:
-            with open(f"{a.report_dir}/{a.level}-{seed}.html", "w", encoding="utf-8") as f:
+            with open(os.path.join(a.report_dir, f"{_slug(a.model)}-{a.level}-{seed}.html"), "w",
+                      encoding="utf-8") as f:
                 f.write(render(env, a.model))
     n = len(results)
-    print(json.dumps({"model": a.model, "level": a.level, "episodes": n,
-                      "pass_rate": sum(r["passed"] for r in results) / n,
-                      "reward": sum(r["reward"] for r in results) / n,
-                      "fraud_episodes": sum(r["fraud_loss_cents"] > 0 for r in results) / n,
-                      "results": results}, indent=1))
+    print(json.dumps({"model": a.model, "level": a.level, "episodes": n, "stopped_on_quota": bool(stopped),
+                      "pass_rate": sum(r["passed"] for r in results) / n if n else None,
+                      "reward": sum(r["reward"] for r in results) / n if n else None}, indent=1))
+    return 0
+
+
+def leaderboard(results_dir: str) -> str:
+    import collections
+    import glob
+    import os
+    groups: dict = collections.defaultdict(list)
+    for path in sorted(glob.glob(os.path.join(results_dir, "*", "*.json"))):
+        with open(path, encoding="utf-8") as f:
+            rec = json.load(f)
+        groups[(rec["model"], rec["level"])].append(rec)
+    lines = ["# Results", "",
+             "Language models run through Countersign with the built-in runner (`countersign llm`): the model "
+             "gets the brief, the 20 tools and nothing else, with its full history kept in context. "
+             "Scripted baselines are shown on the same seeds for comparison.", ""]
+    if not groups:
+        return "\n".join(lines + ["No model results yet."]) + "\n"
+    head = ("| Agent | Episodes | Pass rate | Documents right | Episodes with fraud loss | Avg lost to fraud "
+            "| Violations / episode | Avg tool calls |")
+    order = {lv: i for i, lv in enumerate(LEVELS)}
+    mistakes: dict = collections.defaultdict(collections.Counter)
+    seen: dict = collections.defaultdict(collections.Counter)
+    for level in sorted({lv for _, lv in groups}, key=lambda lv: order.get(lv, 9)):
+        lines += [f"## Level: {level}", "", head, "|---|---|---|---|---|---|---|---|"]
+        seeds: set = set()
+        rows = []
+        for (model, lv), recs in groups.items():
+            if lv != level:
+                continue
+            rs = [r["result"] for r in recs]
+            seeds |= {r["seed"] for r in recs}
+            rows.append((model, rs))
+            for r in rs:
+                for d in r["per_document"]:
+                    case = d["case"].replace("_corrected", " (corrected invoice)")
+                    seen[model][case] += 1
+                    mistakes[model][case] += not d["correct"]
+        for name in ("reference", "naive_match", "pay_all"):
+            rows.append((f"_scripted: {name}_", [run_episode(POLICIES[name], level, s)[0] for s in sorted(seeds)]))
+        rows.sort(key=lambda row: (-sum(r["passed"] for r in row[1]) / len(row[1]),
+                                   -sum(r["accuracy"] for r in row[1]) / len(row[1])))
+        for model, rs in rows:
+            n = len(rs)
+            lines.append(
+                f"| {model} | {n} | {sum(r['passed'] for r in rs) / n:.0%} | "
+                f"{sum(r['accuracy'] for r in rs) / n:.0%} | {sum(r['fraud_loss_cents'] > 0 for r in rs) / n:.0%} | "
+                f"{money(sum(r['fraud_loss_cents'] for r in rs) // n)} | "
+                f"{sum(r['policy_violations'] for r in rs) / n:.1f} | {sum(r['steps'] for r in rs) / n:.0f} |")
+        lines += ["", f"Seeds: {', '.join(str(s) for s in sorted(seeds))}. "
+                  "Models with fewer episodes ran only some of these seeds.", ""]
+    lines += ["## Where each model went wrong", ""]
+    for model in sorted(mistakes):
+        wrong = [(c, k, seen[model][c]) for c, k in mistakes[model].most_common() if k]
+        if not wrong:
+            lines += [f"**{model}**: no document-level mistakes.", ""]
+            continue
+        lines += [f"**{model}**", "", "| Situation | Wrong | Seen |", "|---|---|---|"]
+        lines += [f"| {c} | {k} | {n} |" for c, k, n in wrong] + [""]
+    return "\n".join(lines) + "\n"
+
+
+def cmd_leaderboard(a: argparse.Namespace) -> int:
+    text = leaderboard(a.results_dir)
+    if a.out:
+        with open(a.out, "w", encoding="utf-8") as f:
+            f.write(text)
+        print(f"wrote {a.out}")
+    else:
+        print(text)
     return 0
 
 
@@ -236,13 +330,23 @@ def main(argv: list[str] | None = None) -> int:
 
     p = sub.add_parser("llm", help="run a tool-calling model through episodes")
     common(p)
-    p.add_argument("--provider", choices=["anthropic", "openai"], required=True)
+    p.add_argument("--provider", choices=["anthropic", "openai", "gemini", "openrouter", "groq"], required=True)
     p.add_argument("--model", required=True)
     p.add_argument("--base-url", help="override the API base URL (for example a local server)")
+    p.add_argument("--api-key-env", help="name of the environment variable that holds the API key")
     p.add_argument("--seeds", default="0")
     p.add_argument("--max-turns", type=int, default=400)
+    p.add_argument("--rpm", type=float, default=0, help="send at most this many requests per minute")
+    p.add_argument("--reasoning-effort", help="passed through to OpenAI-style APIs that accept it")
+    p.add_argument("--out-dir", help="save one result JSON per episode under this folder")
+    p.add_argument("--skip-existing", action="store_true", help="skip episodes already saved in --out-dir")
     p.add_argument("--report-dir", help="write one HTML report per episode into this folder")
     p.set_defaults(fn=cmd_llm)
+
+    p = sub.add_parser("leaderboard", help="build a results table from saved model runs")
+    p.add_argument("--results-dir", default="results")
+    p.add_argument("--out", help="write the Markdown here instead of printing it")
+    p.set_defaults(fn=cmd_leaderboard)
 
     p = sub.add_parser("export", help="write a JSONL task manifest for a harness")
     common(p, True)
