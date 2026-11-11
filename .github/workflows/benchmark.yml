@@ -56,10 +56,14 @@ jobs:
         with:
           python-version: "3.13"
       - run: pip install -e .
+      - name: List the models this key can use
+        continue-on-error: true
+        run: countersign models --provider "$PROVIDER"
       - name: Run the model
+        shell: bash
         run: |
           args=(--provider "$PROVIDER" --model "$MODEL" --level "$LEVEL" --seeds "$SEEDS" --rpm "$RPM"
-                --out-dir results --skip-existing --report-dir reports)
+                --out-dir results --skip-existing --report-dir reports --verbose)
           if [ -n "$EFFORT" ]; then args+=(--reasoning-effort "$EFFORT"); fi
           countersign llm "${args[@]}" | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Rebuild the results table
