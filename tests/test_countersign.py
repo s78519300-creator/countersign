@@ -257,6 +257,13 @@ class _Stub(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def do_GET(self):
+        data = json.dumps({"data": [{"id": "models/b"}, {"id": "models/a"}]}).encode()
+        self.send_response(200 if self.headers.get("authorization") == "Bearer k" else 403)
+        self.send_header("content-length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
     def log_message(self, *args):
         pass
 
@@ -356,6 +363,22 @@ def test_saved_runs_resume_and_build_a_leaderboard(tmp_path, monkeypatch, capsys
     table = (tmp_path / "RESULTS.md").read_text()
     assert "| acme/tiny:1 | 3 | 0% | 0% |" in table and "_scripted: reference_ | 3 | 100% | 100%" in table
     assert "Where each model went wrong" in table and "| clean | " in table
+
+
+def test_models_command_and_verbose_progress(monkeypatch, capsys):
+    server, base = _serve()
+    monkeypatch.setenv("FAKE_KEY", "k")
+    try:
+        assert main(["models", "--provider", "gemini", "--base-url", base, "--api-key-env", "FAKE_KEY"]) == 0
+        assert capsys.readouterr().out.split() == ["models/a", "models/b"]
+        monkeypatch.setenv("FAKE_KEY", "wrong")
+        with pytest.raises(RuntimeError, match="HTTP 403"):
+            main(["models", "--provider", "gemini", "--base-url", base, "--api-key-env", "FAKE_KEY"])
+        assert main(["llm", "--provider", "openai", "--model", "m", "--base-url", base, "--api-key-env", "FAKE_KEY",
+                     "--level", "easy", "--verbose"]) == 0
+        assert "seed 0: request 8, day 8: end_day" in capsys.readouterr().err
+    finally:
+        server.shutdown()
 
 
 def test_report_and_cli(tmp_path, capsys):
