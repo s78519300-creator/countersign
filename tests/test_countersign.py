@@ -10,7 +10,7 @@ import pytest
 from countersign import LEVELS, POLICIES, Env, generate, run_episode
 from countersign.audit import audit
 from countersign.cli import main
-from countersign.llm import AnthropicBackend, OpenAIBackend, run_llm
+from countersign.llm import AnthropicBackend, Http, OpenAIBackend, QuotaExhausted, run_llm
 from countersign.policies import reference
 from countersign.report import render
 
@@ -226,16 +226,30 @@ def test_llm_loop_feeds_results_back_and_handles_a_model_that_stops():
 
 class _Stub(BaseHTTPRequestHandler):
     bodies: list = []
+    mode: dict = {}
 
     def do_POST(self):
         body = json.loads(self.rfile.read(int(self.headers["content-length"])))
         _Stub.bodies.append((self.path, {k.lower(): v for k, v in self.headers.items()}, body))
+        mode = _Stub.mode
+        if mode and len(_Stub.bodies) in mode:
+            code, payload, hdrs = mode[len(_Stub.bodies)]
+            data = json.dumps(payload).encode()
+            self.send_response(code)
+            for k, v in hdrs.items():
+                self.send_header(k, v)
+            self.send_header("content-length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+            return
         if self.path.endswith("/v1/messages"):
-            out = {"content": [{"type": "text", "text": "ok"},
+            out = {"usage": {"input_tokens": 10, "cache_read_input_tokens": 90, "output_tokens": 5}, "content": [{"type": "text", "text": "ok"},
                                {"type": "tool_use", "id": "tu_1", "name": "end_day", "input": {}}]}
         else:
-            out = {"choices": [{"message": {"role": "assistant", "content": None, "tool_calls": [
-                {"id": "call_1", "type": "function", "function": {"name": "end_day", "arguments": "{}"}}]}}]}
+            out = {"usage": {"prompt_tokens": 100, "completion_tokens": 5},
+                   "choices": [{"message": {"role": "assistant", "content": None, "refusal": None, "tool_calls": [
+                       {"id": "call_1", "type": "function", "extra_content": {"google": {"thought_signature": "sig"}},
+                        "function": {"name": "end_day", "arguments": "{}"}}]}}]}
         data = json.dumps(out).encode()
         self.send_response(200)
         self.send_header("content-type", "application/json")
@@ -249,10 +263,8 @@ class _Stub(BaseHTTPRequestHandler):
 
 @pytest.mark.parametrize("provider", ["anthropic", "openai"])
 def test_wire_formats_against_a_local_stub(provider):
-    server = HTTPServer(("127.0.0.1", 0), _Stub)
-    threading.Thread(target=server.serve_forever, daemon=True).start()
-    base = f"http://127.0.0.1:{server.server_port}"
-    _Stub.bodies.clear()
+    server, base = _serve()
+    base = base[:-3]
     try:
         backend = (AnthropicBackend("m", api_key="k", base_url=base) if provider == "anthropic"
                    else OpenAIBackend("m", api_key="k", base_url=base + "/v1"))
@@ -260,16 +272,90 @@ def test_wire_formats_against_a_local_stub(provider):
     finally:
         server.shutdown()
     assert res["steps"] == 8 and not res["model_stopped_early"]
+    assert res["usage"] == {"requests": 8, "input_tokens": 800, "output_tokens": 40}
     path, headers, first = _Stub.bodies[0]
     second = _Stub.bodies[1][2]
     if provider == "anthropic":
         assert path == "/v1/messages" and headers["x-api-key"] == "k" and first["tools"][0]["input_schema"]
-        assert second["messages"][-1]["content"][0] == {
-            "type": "tool_result", "tool_use_id": "tu_1", "content": second["messages"][-1]["content"][0]["content"]}
+        block = second["messages"][-1]["content"][0]
+        assert block["type"] == "tool_result" and block["tool_use_id"] == "tu_1"
+        assert block["cache_control"] == {"type": "ephemeral"} and first["tools"][-1]["cache_control"]
+        marked = [b for m in _Stub.bodies[-1][2]["messages"] if m["role"] == "user" for b in m["content"]
+                  if "cache_control" in b]
+        assert len(marked) == 1
     else:
         assert path == "/v1/chat/completions" and headers["authorization"] == "Bearer k"
         assert first["tools"][0]["function"]["parameters"]["type"] == "object"
         assert second["messages"][-1]["role"] == "tool" and second["messages"][-1]["tool_call_id"] == "call_1"
+        echoed = second["messages"][-2]
+        assert echoed["tool_calls"][0]["extra_content"] == {"google": {"thought_signature": "sig"}}
+        assert "refusal" not in echoed and "content" not in echoed
+
+
+def _serve():
+    server = HTTPServer(("127.0.0.1", 0), _Stub)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    _Stub.bodies.clear()
+    return server, f"http://127.0.0.1:{server.server_port}/v1"
+
+
+def test_rate_limits_are_waited_out_and_daily_quota_stops_the_run():
+    waits = []
+    server, base = _serve()
+    _Stub.mode = {1: (429, {"error": {"message": "Rate limit. Please retry in 7.5s."}}, {}),      # nth request
+                  2: (429, {"error": {"message": "slow down"}}, {"retry-after": "3"}),
+                  3: (503, {"error": "busy"}, {})}
+    try:
+        backend = OpenAIBackend("m", api_key="k", base_url=base, http=Http(sleep=waits.append))
+        res = run_llm(Env("easy", 0), backend)
+        assert res["steps"] == 8 and waits[:3] == [8.5, 4.0, 8]
+        _Stub.bodies.clear()
+        _Stub.mode = {3: (429, {"error": {"status": "RESOURCE_EXHAUSTED", "details": [
+            {"quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier"}]}}, {})}
+        with pytest.raises(QuotaExhausted):
+            run_llm(Env("easy", 0), OpenAIBackend("m", api_key="k", base_url=base, http=Http(sleep=waits.append)))
+        _Stub.bodies.clear()
+        _Stub.mode = {i: (429, {"error": {"message": "too many"}}, {}) for i in range(1, 50)}
+        with pytest.raises(QuotaExhausted):
+            run_llm(Env("easy", 0), OpenAIBackend("m", api_key="k", base_url=base,
+                                                  http=Http(tries=3, sleep=waits.append)))
+    finally:
+        _Stub.mode = {}
+        server.shutdown()
+
+
+def test_pacing_spaces_requests_out():
+    waits = []
+    server, base = _serve()
+    try:
+        run_llm(Env("easy", 0), OpenAIBackend("m", api_key="k", base_url=base, http=Http(rpm=6, sleep=waits.append)))
+    finally:
+        server.shutdown()
+    assert len(waits) == 7 and all(9.0 < w <= 10.0 for w in waits)
+
+
+def test_saved_runs_resume_and_build_a_leaderboard(tmp_path, monkeypatch, capsys):
+    server, base = _serve()
+    monkeypatch.setenv("FAKE_KEY", "k")
+    out = tmp_path / "results"
+    args = ["llm", "--provider", "openai", "--model", "acme/tiny:1", "--base-url", base, "--api-key-env", "FAKE_KEY",
+            "--level", "easy", "--out-dir", str(out), "--skip-existing", "--report-dir", str(tmp_path / "rep")]
+    try:
+        assert main(args + ["--seeds", "0-1"]) == 0
+        assert len(_Stub.bodies) == 16
+        _Stub.mode = {26: (429, {"error": {"message": "daily limit reached"}}, {})}
+        assert main(args + ["--seeds", "0-3"]) == 0          # 0 and 1 skipped, 2 runs, 3 hits the quota
+    finally:
+        _Stub.mode = {}
+        server.shutdown()
+    saved = sorted(p.name for p in (out / "acme-tiny-1").iterdir())
+    assert saved == ["easy-0.json", "easy-1.json", "easy-2.json"]
+    rec = json.loads((out / "acme-tiny-1" / "easy-2.json").read_text())
+    assert rec["model"] == "acme/tiny:1" and rec["result"]["usage"]["requests"] == 8 and len(rec["actions"]) == 8
+    assert main(["leaderboard", "--results-dir", str(out), "--out", str(tmp_path / "RESULTS.md")]) == 0
+    table = (tmp_path / "RESULTS.md").read_text()
+    assert "| acme/tiny:1 | 3 | 0% | 0% |" in table and "_scripted: reference_ | 3 | 100% | 100%" in table
+    assert "Where each model went wrong" in table and "| clean | " in table
 
 
 def test_report_and_cli(tmp_path, capsys):
