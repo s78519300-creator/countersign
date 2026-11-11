@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "countersign"
+version = "0.1.0"
+description = "A procedurally generated accounts-payable world for training and testing AI agents, with fraud, multi-day workflows and a verifier that reads the books."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+dependencies = []
+keywords = ["ai-agents", "rl-environment", "benchmark", "evaluation", "mcp", "accounts-payable", "fraud"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+countersign = "countersign.cli:main"
+
+[tool.setuptools]
+packages = ["countersign"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
