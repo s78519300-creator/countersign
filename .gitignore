@@ -3,7 +3,7 @@ __pycache__/
 .pytest_cache/
 build/
 dist/
-report.html
-reports/
+/report.html
+/reports/
 result.json
 tasks.jsonl

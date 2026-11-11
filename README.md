@@ -41,6 +41,23 @@ countersign llm --provider openai --model <model-id> --level medium --seeds 0-9
 # any OpenAI-compatible server works too: --base-url http://localhost:8000/v1
 ```
 
+### Benchmark a model from GitHub, no laptop needed
+
+The repository includes a workflow that runs a model, saves every episode under `results/`, and
+rebuilds [RESULTS.md](RESULTS.md).
+
+1. Get an API key. Google's Gemini API has a free tier (create a key in Google AI Studio);
+   `openrouter`, `groq`, `openai` and `anthropic` are supported too.
+2. In the repository, open Settings, then Secrets and variables, then Actions, and add the key as
+   `GEMINI_API_KEY` (or `OPENROUTER_API_KEY`, `GROQ_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`).
+3. Open the Actions tab, choose "Benchmark a model", press "Run workflow", and pick the model,
+   level and seeds.
+
+Runs are paced to stay under rate limits and are resumable. If the provider's daily quota runs out,
+finished episodes are kept and the unfinished one is discarded; run the workflow again later and it
+continues where it stopped. Free tiers change often, so check your provider's current limits. An
+easy episode takes roughly 80 to 200 requests.
+
 ## What the agent runs into
 
 | Situation | What a good clerk does |
@@ -119,9 +136,9 @@ Scripted baselines over 200 seeds per level:
 
 Reproduce with `countersign bench --seeds 0-199`.
 
-**No language-model results are published here yet.** This release was built and verified with
-scripted policies only. If you run a model, the HTML report shows every tool call by day next to
-the per-document verdicts, which makes failures quick to read.
+**Model results** are collected in [RESULTS.md](RESULTS.md) once runs exist. That file is rebuilt
+by the benchmark workflow below from the raw episode files in `results/`, so every number in it can
+be traced to a saved run. The scripted policies above are the only results verified in this release.
 
 | Level | Days | Documents per episode | Tool calls the reference clerk needs |
 |---|---|---|---|
@@ -172,7 +189,8 @@ writes one task per line with its instruction, launch command and success condit
   data. Held-out situations are available under a commercial license.
 
 More detail on the design, the answer key and the verifier is in
-[docs/ENVIRONMENT_CARD.md](docs/ENVIRONMENT_CARD.md).
+[docs/ENVIRONMENT_CARD.md](docs/ENVIRONMENT_CARD.md). If you are evaluating Countersign for
+training or evaluation data, start with [docs/FOR_BUYERS.md](docs/FOR_BUYERS.md).
 
 ## Roadmap
 
